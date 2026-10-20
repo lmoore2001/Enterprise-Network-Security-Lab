@@ -38,12 +38,56 @@ Hands-on enterprise networking and cybersecurity lab for practicing virtualizati
 - **Enterprise update error:** The default enterprise package source required a subscription. Switched to the supported no-subscription repository for a home lab.
 - **Static IP vs DHCP:** A static host IP inside the gateway's DHCP pool can conflict with future leases; resolved with a router-side reservation for the same address.
 
+## Phase 2 — Ubuntu Server & Virtual Networking (In Progress)
+**Tracking:** [Issue #2](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/2)
+
+### Verified
+- Ubuntu Server 24.04.5 LTS deployed as **VM 100, ubuntu-server-01**: 2 vCPU, 2 GiB RAM, 25 GiB disk, VirtIO NIC on `vmbr0`.
+- LAN DHCP IP `10.0.0.160/24` at last verification (may change); gateway `10.0.0.1`; successful LAN/internet/DNS tests.
+- SSH from Windows laptop over home LAN succeeded; QEMU guest agent active and reporting guest IP to Proxmox.
+- Tailscale installed and authenticated on Ubuntu VM 100; its Tailscale IPv4 was `100.92.220.12` (not the Proxmox host's IP).
+
+### Not yet verified
+- Full route and resolver evidence, screenshots, and final Phase 2 documentation.
+- Isolated bridge `vmbr1` (no physical uplink), plus Ubuntu lab VMs 101/102 on `192.168.100.10/24` and `192.168.100.11/24`.
+- VM-to-VM connectivity and proof of isolation from the home LAN.
+- Tailscale SSH access **from outside the home LAN**.
+
+**Safety:** Keep Proxmox management on `vmbr0` at `10.0.0.234/24`. Do not modify its gateway or expose vulnerable test systems to the home LAN.
+
+## VM Inventory — Verified vs Planned
+| System | Status | Purpose |
+|---|---|---|
+| Proxmox `pve` | Verified | Dell virtualization host, 16 GiB RAM |
+| VM 100 Ubuntu Server | Verified | Linux, SSH, guest agent, Tailscale |
+| VM 101 / 102 Ubuntu lab | Planned | Isolated network tests on `vmbr1` |
+| Windows Server + Windows client | Planned | Phase 3 AD DS, DNS, DHCP, GPO |
+| OPNsense VM | Planned | Phase 4 routing and firewall rules |
+| Wazuh VM | Planned | Phase 5 SOC and log monitoring |
+| Kali + vulnerable training target | Planned | Phase 6 authorized security testing |
+
+With only 16 GiB RAM, not all planned VMs should run simultaneously. VM IDs and IP addresses in future guides are proposals until deployed.
+
+## Reference Guides
+These are **runbooks, not completion evidence**. Detailed instructions and career-focused **Why it matters** explanations appear in each issue's first comment.
+
+| Phase | Reference |
+|---|---|
+| 2 — Virtual networking and remote access | [Issue #3](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/3) |
+| 3 — Windows Server, Active Directory, DNS, DHCP | [Issue #5](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/5) |
+| 4 — OPNsense firewall and routing | [Issue #6](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/6) |
+| 5 — Wazuh monitoring and incident investigation | [Issue #7](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/7) |
+| 6 — Penetration testing and vulnerability assessment | [Issue #8](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/8) |
+
+**Optional side projects:** Raspberry Pi 4 Pi-hole DNS filtering and Uptime Kuma availability monitoring. Neither is required for Phase 3.
+
 ## Roadmap
 - [x] Phase 1: Proxmox infrastructure, host networking, updates, and verification
 - [ ] Phase 2: Virtual machines, virtual bridges, and network segmentation
 - [ ] Phase 3: Windows Server, Active Directory, DNS, and DHCP labs
 - [ ] Phase 4: Firewall policies, routing, and access controls
 - [ ] Phase 5: Security monitoring, incident investigation, and lab write-ups
+- [ ] Phase 6: Authorized penetration testing, vulnerability assessment, remediation, and retesting
 
 ## Next Steps
-Create the first virtual machine, map virtual network interfaces, and design isolated lab networks so experiments do not affect the home LAN. Record network diagrams, test commands, results, and screenshots for each exercise.
+Complete Phase 2: capture route/DNS evidence; create isolated `vmbr1` and lab VMs; verify connectivity and isolation; test Tailscale from outside the home LAN; document screenshots and a network diagram. Then begin Phase 3 Windows Server and Active Directory.
