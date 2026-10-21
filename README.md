@@ -38,29 +38,45 @@ Hands-on enterprise networking and cybersecurity lab for practicing virtualizati
 - **Enterprise update error:** The default enterprise package source required a subscription. Switched to the supported no-subscription repository for a home lab.
 - **Static IP vs DHCP:** A static host IP inside the gateway's DHCP pool can conflict with future leases; resolved with a router-side reservation for the same address.
 
-## Phase 2 — Ubuntu Server & Virtual Networking (In Progress)
-**Tracking:** [Issue #2](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/2)
+## Phase 2 — Ubuntu Server & Virtual Networking (Implementation Complete; Evidence Pending)
+**Tracking and detailed verification:** [Issue #2](https://github.com/lmoore2001/Enterprise-Network-Security-Lab/issues/2)
 
-### Verified
-- Ubuntu Server 24.04.5 LTS deployed as **VM 100, ubuntu-server-01**: 2 vCPU, 2 GiB RAM, 25 GiB disk, VirtIO NIC on `vmbr0`.
-- LAN DHCP IP `10.0.0.160/24` at last verification (may change); gateway `10.0.0.1`; successful LAN/internet/DNS tests.
-- SSH from Windows laptop over home LAN succeeded; QEMU guest agent active and reporting guest IP to Proxmox.
-- Tailscale installed and authenticated on Ubuntu VM 100; its Tailscale IPv4 was `100.92.220.12` (not the Proxmox host's IP).
+### Implemented
+- **VM 100 `ubuntu-server-01`**: Ubuntu Server 24.04.5 LTS; 2 vCPU, 2 GiB RAM, 25 GiB disk; VirtIO NIC on home-LAN bridge `vmbr0`. Last observed DHCP IP `10.0.0.160/24`; gateway `10.0.0.1`. LAN SSH, internet, DNS, and guest agent verified.
+- **VM 101 `ubuntu-lab-01`**: Ubuntu clone attached to isolated `vmbr1`, static `192.168.100.10/24`, no configured default gateway.
+- **VM 102 `ubuntu-lab-02`**: Ubuntu clone attached to isolated `vmbr1`, static `192.168.100.11/24`, no default gateway (terminal output reviewed).
+- Operator reported cleaning cloned hostnames, machine IDs, SSH host keys, and copied Tailscale service state on VM 101/102. Independent comparison output is not yet archived.
+- **Tailscale on VM 100**: `100.92.220.12`. Operator successfully SSH'd into VM 100 from a phone on cellular data, confirming offsite remote access. This does not imply direct remote access to the Proxmox dashboard.
 
-### Not yet verified
-- Full route and resolver evidence, screenshots, and final Phase 2 documentation.
-- Isolated bridge `vmbr1` (no physical uplink), plus Ubuntu lab VMs 101/102 on `192.168.100.10/24` and `192.168.100.11/24`.
-- VM-to-VM connectivity and proof of isolation from the home LAN.
-- Tailscale SSH access **from outside the home LAN**.
+### Network Topology
+```text
+Home LAN 10.0.0.0/24 — router 10.0.0.1
+           |
+      nic0 / vmbr0 — Proxmox pve 10.0.0.234
+           |
+      VM 100 Ubuntu — 10.0.0.160 (DHCP)
+           +-- Tailscale 100.92.220.12 <--- cellular phone (SSH verified)
 
-**Safety:** Keep Proxmox management on `vmbr0` at `10.0.0.234/24`. Do not modify its gateway or expose vulnerable test systems to the home LAN.
+      vmbr1 — isolated virtual-only lab network 192.168.100.0/24
+           |                                   |
+      VM 101 Ubuntu                       VM 102 Ubuntu
+      192.168.100.10                      192.168.100.11
+           <--------- ping succeeded ---------->
+      VM 102 -> 10.0.0.1 ping failed as intended
+```
+
+### Verification and Limitations
+- Successful VM 101 ↔ VM 102 pings support lab network connectivity.
+- VM 102 showed only the connected `192.168.100.0/24` route; home gateway `10.0.0.1` ping failed. These checks support initial isolation but are not exhaustive proof of security boundaries.
+- Screenshots of the Proxmox bridge/NIC configuration, guest route and ping tests, and remote SSH remain to be added. Confirm `vmbr1` has no physical uplink and both lab VMs have no extra NICs before declaring all boundary checks complete.
+- Keep Proxmox management on `vmbr0`; do not expose test systems to the home LAN or public internet. Do not publish credentials, SSH private keys, or Tailscale auth tokens.
 
 ## VM Inventory — Verified vs Planned
 | System | Status | Purpose |
 |---|---|---|
 | Proxmox `pve` | Verified | Dell virtualization host, 16 GiB RAM |
 | VM 100 Ubuntu Server | Verified | Linux, SSH, guest agent, Tailscale |
-| VM 101 / 102 Ubuntu lab | Planned | Isolated network tests on `vmbr1` |
+| VM 101 / 102 Ubuntu lab | Implemented; operator tests passed | Isolated network tests on `vmbr1` |
 | Windows Server + Windows client | Planned | Phase 3 AD DS, DNS, DHCP, GPO |
 | OPNsense VM | Planned | Phase 4 routing and firewall rules |
 | Wazuh VM | Planned | Phase 5 SOC and log monitoring |
@@ -83,11 +99,11 @@ These are **runbooks, not completion evidence**. Detailed instructions and caree
 
 ## Roadmap
 - [x] Phase 1: Proxmox infrastructure, host networking, updates, and verification
-- [ ] Phase 2: Virtual machines, virtual bridges, and network segmentation
+- [x] Phase 2: Virtual machines, virtual bridges, and network segmentation (core implementation and tests; evidence capture pending)
 - [ ] Phase 3: Windows Server, Active Directory, DNS, and DHCP labs
 - [ ] Phase 4: Firewall policies, routing, and access controls
 - [ ] Phase 5: Security monitoring, incident investigation, and lab write-ups
 - [ ] Phase 6: Authorized penetration testing, vulnerability assessment, remediation, and retesting
 
 ## Next Steps
-Complete Phase 2: capture route/DNS evidence; create isolated `vmbr1` and lab VMs; verify connectivity and isolation; test Tailscale from outside the home LAN; document screenshots and a network diagram. Then begin Phase 3 Windows Server and Active Directory.
+Finish Phase 2 evidence: capture redacted screenshots, confirm both VM NICs and the `vmbr1` host bridge configuration, review tailnet security and router port-forwarding settings. Then begin Phase 3 Windows Server and Active Directory.
