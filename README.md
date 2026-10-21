@@ -21,7 +21,7 @@ Hands-on enterprise networking and cybersecurity lab for practicing virtualizati
 3. Installed Proxmox VE 9.2 (web UI initially displayed 9.2.2), using ext4, and verified the node and local storage appeared in the dashboard.
 4. Connected the host by Ethernet through the NETGEAR switch to the Xfinity gateway.
 5. Set management hostname `pve.homelab.internal`, static address `10.0.0.234/24`, gateway `10.0.0.1`, and DNS `75.75.75.75`.
-6. Created a router-side reserved-IP entry mapping `10.0.0.234` to Dell MAC `B8:CA:3A:AD:39:44` to prevent DHCP from offering the address to another client. Verified the gateway lists the reservation.
+6. Created a router-side reserved-IP entry mapping `10.0.0.234` to Dell MAC `[REDACTED DEVICE MAC]` to prevent DHCP from offering the address to another client. Verified the gateway lists the reservation.
 7. Disabled Proxmox/Ceph enterprise package repositories (no subscription), enabled the Proxmox `pve-no-subscription` trixie repository, and successfully refreshed package metadata.
 8. Completed the initial package upgrade, rebooted for the new kernel, and verified the management dashboard remained accessible at `https://10.0.0.234:8006`.
 
